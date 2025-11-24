@@ -10,6 +10,8 @@ from pydantic_settings import (
 
 
 dot_env_path = Path(Path(__file__).parents[2], ".env").resolve()
+db_path = str(Path(Path(__file__).parents[2], "sqlite.db").resolve())
+
 
 class AppCTXSettings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -19,6 +21,8 @@ class AppCTXSettings(BaseSettings):
     # fields:
     TG_BOT_TOKEN: str = ""
     TG_BOT_ADMINS: int | str | list[int] = Field(default_factory=list, description="Comma-separated list of admin user IDs or list of ints.")
+    DB_CONNECTION_STRING: str = db_path
+    DB_PREFIX: str = "sqlite+aiosqlite:///"
 
     @field_validator('TG_BOT_ADMINS', mode='after')
     @classmethod

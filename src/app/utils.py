@@ -1,9 +1,8 @@
 from app.enums import RolesEnum
 
 async def get_user_role(user_id: int, event) -> RolesEnum:
-    # Dummy implementation for example purposes
     print("User ID:", user_id)
-    admin_ids = [94408817, 123456789]  # Example admin IDs
+    admin_ids = [94408817, 123456789]
     if user_id in admin_ids:
         return RolesEnum.ADMIN
     if event.chat and event.chat.type != "private":
