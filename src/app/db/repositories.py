@@ -55,10 +55,10 @@ class ChatsRepository:
         Фактические данные не удаляем – просто работаем с новой версией.
         """
         chat = await self.get_or_create_chat(chat_id)
-        print("CHAT OBJ", chat)
+        # print("CHAT OBJ", chat)
         # # TODO убрать?
         chat.history_version += 1
-        print("CHAT OBJ AFTER", chat)
+        # print("CHAT OBJ AFTER", chat)
 
         chat.last_poll_id = None
         chat.updated_at = datetime.now()
