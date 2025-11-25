@@ -23,6 +23,10 @@ class AppCTXSettings(BaseSettings):
     TG_BOT_ADMINS: int | str | list[int] = Field(default_factory=list, description="Comma-separated list of admin user IDs or list of ints.")
     DB_CONNECTION_STRING: str = db_path
     DB_PREFIX: str = "sqlite+aiosqlite:///"
+    LLM_MODEL: str
+    LLM_AUTHORIZATION_KEY: str
+    LLM_API_BASE_URL: str
+
 
     @field_validator('TG_BOT_ADMINS', mode='after')
     @classmethod
@@ -40,3 +44,5 @@ class AppCTXSettings(BaseSettings):
             result = [value]
         
         return result
+
+appctx = AppCTXSettings()

@@ -19,3 +19,8 @@ class RolesEnum(str, Enum):
     USER = "user" #обычный пользователь
     BANNED = "banned" #забаненный пользователь
 
+
+class AgentInputModes(str, Enum):
+    ZERO = "zero"
+    COMPLETE = "complete"
+    NEXT = "next"

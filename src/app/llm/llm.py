@@ -1,6 +1,6 @@
 import json
 from typing import List
-from prompts import (FIRST_LINE_PROMPT, NEXT_LINE_PROMPT,
+from app.llm.prompts import (FIRST_LINE_PROMPT, NEXT_LINE_PROMPT,
                       EVALUATION_PROMPT, COMPLETE_PROMPT)
 from typing import List, TypedDict, Optional
 from langchain_gigachat import GigaChat
@@ -11,6 +11,7 @@ from enum import Enum, auto
 import ast
 from functools import wraps
 import json
+from app.settings import AppCTXSettings
 
 
 class LLMModelEnum(Enum):
@@ -38,18 +39,19 @@ def string_converter(func):
     async def wrapper(*args, **kwargs):
         func_res = await func(*args, **kwargs)
         return json.loads(func_res)
+        # return ast.literal_eval(func_res)
     return wrapper
 
 
 class LLMGenerator:
-    def __init__(self, app_config = None, model: str = "GigaChat", memory = None):
-        self.model = model
+    def __init__(self, app_config: AppCTXSettings, memory = None):
+        self.model = app_config.LLM_MODEL or "GigaChat-Max"
         self.llm = {
             LLMModelEnum.generator: GigaChat(
-                model=self.model, credentials="", verify_ssl_certs=False,
-                temperature=0.5, top_p=0.9),
+                model=self.model, credentials=app_config.LLM_AUTHORIZATION_KEY, verify_ssl_certs=False,
+                temperature=0.6, top_p=0.9),
             LLMModelEnum.judge: GigaChat(
-                model=self.model, credentials="", verify_ssl_certs=False,
+                model=self.model, credentials=app_config.LLM_AUTHORIZATION_KEY, verify_ssl_certs=False,
                 temperature=0.1),
         }
         self.memory_saver = memory
@@ -93,6 +95,9 @@ class LLMGenerator:
     async def llm_generate_next(self, history: List[str]) -> List[str]:
         prompt = NEXT_LINE_PROMPT.format(history="\n".join(history))
         raw = await self.call_llm(prompt)
+        print("----")
+        print("llm_generate_next", raw.content)
+        print("----")
         return raw.content
 
     @string_converter
@@ -127,7 +132,7 @@ class LLMGenerator:
         history = state["history"]
 
         llm_scores = await self.llm_evaluate(history, drafts)
-        final = self.pick_best_4(drafts, history, llm_scores)
+        final = self.pick_best_4(drafts, llm_scores)
 
         state["final"] = final
         return state

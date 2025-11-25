@@ -1,38 +1,88 @@
 
 FIRST_LINE_PROMPT = """
-Generate a FIRST line of Python code for a collaborative coding game.
-Rules:
-- No logic.
-- It must be a safe starter line: import, function signature, class header, etc.
-- Max 95 characters.
-- Do NOT write full function bodies.
-Generate EXACTLY 6 variants as JSON list of strings.
+Ты - профессиональный senior-разработчик на Python3.
+Сгенерируй ПЕРВУЮ строку Python-кода для игры по коллективному написанию программы.
 
-Return STRICTLY IN JSON ONLY
-NO ADDITIONAL INFO OR EXPLANATION NEEDED
-WITH NO MARKUP (like ```json etc)
+Правила:
+- Никакой логики.
+- Строка должна быть безопасным стартовым элементом: import, объявление функции,
+  объявление класса и т.п.
+- Максимум 95 символов.
+- Не писать тела функций или классов.
+- Сгенерировать РОВНО 6 вариантов в виде JSON-списка строк.
+
+Верни СТРОГО ТОЛЬКО JSON.
+НИКАКИХ дополнительных пояснений.
+НИКАКОЙ разметки (например, ```json или других).
 """
 
 NEXT_LINE_PROMPT = """
-You are generating the NEXT line of Python code based on the prior code.
-History:
+Ты - профессиональный senior-разработчик на Python3.
+Ты генерируешь СЛЕДУЮЩУЮ строку Python-кода на основе истории.
+
+Входные данные (история кода) могут содержать:
+- неразрывные пробелы (U+00A0, "\xa0")
+- невидимые или нестандартные пробелы
+- случайные лишние символы форматирования
+
+ПЕРЕД генерацией кода:
+1. Нормализуй входной текст:
+   - Замени все НЕстандартные пробелы и \xa0 на обычный пробел.
+   - Убери невидимые символы Юникода (ZERO WIDTH SPACE, BOM, SHY).
+   - Сохрани только обычные пробелы и стандартные отступы.
+   - Приведи все tab → 4 spaces.
+2. ВОССТАНОВИ корректную структуру и отступы блока.
+3. НЕ копируй нечитаемые или невалидные символы в ответ.
+
+Твоя задача:
+- Сгенерировать ровно ОДНУ строку кода, которая логически продолжает последнюю строку истории либо согласуется с ней / не противоречит.
+- Если нет очевидного логического продолжения, сгенерируй безопасную нейтральную строку, например: "import sys", "pass", "class Example:", "def main():", "if __name__ == '__main__':"
+- ТОЛЬКО продолжить текущий блок (учти отступы).
+- Максимум 95 символов.
+- Возвращай РОВНО 6 вариантов, в JSON-списке строк.
+
+
+Требования к формату (ОБЯЗАТЕЛЬНЫЕ):
+- Возвращай СТРОГО валидный JSON-список строк.
+- Используй ТОЛЬКО двойные ASCII-кавычки: " (U+0022).
+- Запрещены любые типографские кавычки: «», „“, ”, ‘’, и т.п.
+- Внутри строк допускаются обычные пробелы.
+- НЕ используй escape-последовательности вида \n, \t, \", \\. 
+- Никаких пояснений, текста, комментариев, префиксов, Markdown — только JSON.
+- НЕЛЬЗЯ использовать символ обратной кавычки: ` (U+0060). 
+  Это абсолютный запрет. Если символ ` появился — ответ неверен.
+- НЕЛЬЗЯ использовать Markdown, блоки ```json, ```python, ```.
+
+Если нельзя логически продолжить код, всё равно сгенерируй безопасную нейтральную строку
+(import, объявление функции/класса и т.п.). Пустой список возвращать НЕЛЬЗЯ.
+
+Выводи СТРОГО JSON и НИЧЕГО БОЛЬШЕ.
+Input Code:
 {history}
 
-Rules:
-- Generate code that is the natural next line.
-- Do NOT add new features or new logic.
-- Continue the existing block/indentation.
-- Max 95 characters per line.
-- Return EXACTLY 6 variants as a JSON list.
+Пример:
+## 1-пример:
+Input Code:
+def hello():
+    print("hi")
 
+Ваши варианты:
+["    return None", "    pass", ...]
 
-Return STRICTLY IN JSON ONLY
-NO ADDITIONAL INFO OR EXPLANATION NEEDED
-WITH NO MARKUP (like ```json etc)
+## 2-пример:
+Input Code:
+import random
+
+Ваши варианты:
+["numbers = [1, 2, 3]", "def main()", ...]
+
 """
 
+
+
 EVALUATION_PROMPT = """
-Оцените каждую предложенную строку Python-кода по шкале от 0 до 100.
+Ты - профессиональный senior-разработчик на Python3.
+Оцени каждую предложенную строку Python-кода по шкале от 0 до 100.
 
 Критерии:
 
@@ -49,7 +99,21 @@ EVALUATION_PROMPT = """
 {candidates}
 
 Верните СТРОГО ТОЛЬКО JSON вида: {{ "<строка>": score }}
-БЕЗ каких-либо пояснений, комментариев или разметки (например, ```json).
+БЕЗ каких-либо пояснений, комментариев или разметки (например, ```json)
+- Без дополнительных комментариев.
+- Без Markdown.
+- Без объяснений.
+- Используй ТОЛЬКО двойные кавычки.
+- Никаких одинарных кавычек.
+- Только JSON.
+
+Пример:
+## 1-пример:
+Input Code:
+["    return None", "    pass", ...]
+
+Return:
+{{ "    return None": some int score, "    pass": some int score, ... }}
 """
 
 COMPLETE_PROMPT = """
@@ -91,7 +155,6 @@ Input Code:
 
 async def generate_next(self, state: CodeState):
     drafts = await self.llm_generate_next(state["history"])
-    state["drafts"] = drafts
 
 Returned Code:
 

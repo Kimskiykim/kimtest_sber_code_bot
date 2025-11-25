@@ -7,8 +7,6 @@ TG_BOT_TOKEN = "YOUR_TG_TOKEN"
 TG_BOT_ADMINS = "123456789,"
 
 LLM_MODEL = ""
-LLM_API_KEY = ""
-LLM_API_BASE = ""
-DB_CONNECTION_STRING = ""
- 
+LLM_AUTHORIZATION_KEY = ""
+-- (not implemented - only sqlite) DB_CONNECTION_STRING = ""
  
