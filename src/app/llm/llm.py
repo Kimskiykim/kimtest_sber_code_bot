@@ -95,9 +95,9 @@ class LLMGenerator:
     async def llm_generate_next(self, history: List[str]) -> List[str]:
         prompt = NEXT_LINE_PROMPT.format(history="\n".join(history))
         raw = await self.call_llm(prompt)
-        print("----")
-        print("llm_generate_next", raw.content)
-        print("----")
+        # print("----")
+        # print("llm_generate_next", raw.content)
+        # print("----")
         return raw.content
 
     @string_converter

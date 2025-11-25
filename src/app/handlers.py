@@ -22,7 +22,7 @@ class RoleMiddleware(BaseMiddleware):
         chat_id = event.chat.id
         # ---
         data["role"] = await get_user_role(user_id, event, admin_ids=appctx.TG_BOT_ADMINS)
-        print("ADMINS0", appctx.TG_BOT_ADMINS)
+        # print("ADMINS0", appctx.TG_BOT_ADMINS)
         data["llm_configurable"] = {"configurable": {"thread_id": chat_id}}
         return await handler(event, data)
 
